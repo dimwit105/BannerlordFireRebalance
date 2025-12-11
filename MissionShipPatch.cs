@@ -68,15 +68,17 @@ namespace FireRebalance
             if (__instance == null || Mission.Current == null) return;
             if (FireRebalanceSubmodule._navalAgentsLogic == null) return;
 
-            var state = MissionShipPatch.GetState(__instance);
-            if (Mission.Current.CurrentTime - state.LastFireDamage < 8f) return;
-
             float fireHPMax = __instance.HitPoints;
             if (__instance.FireHitPoints >= fireHPMax)
             {
                 FireHPSetter?.Invoke(__instance, new object[] { fireHPMax });
                 return;
             }
+            
+            var state = MissionShipPatch.GetState(__instance);
+            if (Mission.Current.CurrentTime - state.LastFireDamage < 8f) return;
+
+
 
             int crewCount = FireRebalanceSubmodule._navalAgentsLogic.GetActiveAgentCountOfShip(__instance);
             float crewMax = __instance.CrewSizeOnMainDeck;
