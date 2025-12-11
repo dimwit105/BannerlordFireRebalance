@@ -1,0 +1,91 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Target .NET Framework 4.7.2 for Bannerlord compatibility -->
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <AssemblyName>FireRebalance</AssemblyName>
+    <RootNamespace>FireRebalance</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PlatformTarget>x64</PlatformTarget>
+
+    <!-- Suppress architecture mismatch warnings -->
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+
+    <!-- Output directly to the mod's bin folder -->
+    <OutputPath>/home/dimwit105/.local/share/Steam/steamapps/common/Mount &amp; Blade II Bannerlord/Modules/FireRebalance/bin/Win64_Shipping_Client/</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+    <!-- Don't copy dependencies - use the game's/Bannerlord.Harmony's versions -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <!-- Game DLL references path -->
+  <PropertyGroup>
+    <GameBinPath>/home/dimwit105/.local/share/Steam/steamapps/common/Mount &amp; Blade II Bannerlord/bin/Win64_Shipping_Client/</GameBinPath>
+    <HarmonyPath>/home/dimwit105/.local/share/Steam/steamapps/workshop/content/261550/2859188632/bin/Win64_Shipping_Client/</HarmonyPath>
+  </PropertyGroup>
+  
+  <Target Name="CopySubModule" AfterTargets="Build">
+    <Copy
+            SourceFiles="SubModule.xml"
+            DestinationFolder="/home/dimwit105/.local/share/Steam/steamapps/common/Mount &amp; Blade II Bannerlord/Modules/FireRebalance" />
+  </Target>
+  <!-- Reference Harmony from Bannerlord.Harmony mod (already installed) -->
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>$(HarmonyPath)0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Game Assembly References -->
+  <ItemGroup>
+    <Reference Include="NavalDLC">
+      <HintPath>..\..\..\.local\share\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\NavalDLC\bin\Win64_Shipping_Client\NavalDLC.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TaleWorlds.CampaignSystem">
+      <HintPath>$(GameBinPath)TaleWorlds.CampaignSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TaleWorlds.Core">
+      <HintPath>$(GameBinPath)TaleWorlds.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TaleWorlds.DotNet">
+      <HintPath>..\..\..\.local\share\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.DotNet.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TaleWorlds.Library">
+      <HintPath>$(GameBinPath)TaleWorlds.Library.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TaleWorlds.MountAndBlade">
+      <HintPath>$(GameBinPath)TaleWorlds.MountAndBlade.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TaleWorlds.Localization">
+      <HintPath>$(GameBinPath)TaleWorlds.Localization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TaleWorlds.ObjectSystem">
+      <HintPath>$(GameBinPath)TaleWorlds.ObjectSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TaleWorlds.Engine">
+      <HintPath>$(GameBinPath)TaleWorlds.Engine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TaleWorlds.SaveSystem">
+      <HintPath>$(GameBinPath)TaleWorlds.SaveSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TaleWorlds.LinQuick">
+      <HintPath>$(GameBinPath)TaleWorlds.LinQuick.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
