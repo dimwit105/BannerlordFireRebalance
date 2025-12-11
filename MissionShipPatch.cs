@@ -31,8 +31,6 @@ namespace FireRebalance
         {
             if (Mission.Current == null) return;
             GetState(__instance).LastFireDamage = Mission.Current.CurrentTime;
-            InformationManager.DisplayMessage(new InformationMessage(
-                $"{__instance.ShipOrigin.Name} : {__instance.FireHitPoints} / {__instance.HitPoints}", new Color(1, 1, 1)));
         }
         [HarmonyPatch(typeof(MissionShip), "InitForMission")]
         [HarmonyPostfix]
@@ -86,11 +84,6 @@ namespace FireRebalance
 
             float regenPerSecond = __instance.FireHitPoints * 0.005F * crewMult;
             float newFireHP = MathF.Min(__instance.FireHitPoints + regenPerSecond * dt, fireHPMax);
-            if (newFireHP > __instance.FireHitPoints)
-            {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"{__instance.ShipOrigin.Name} : Healed: {regenPerSecond*dt} with a base of {__instance.FireHitPoints*0.005F} and a crew multiplier of {crewMult}", new Color(1, 1, 1)));
-            }
 
             FireHPSetter?.Invoke(__instance, new object[] { newFireHP });
         }
