@@ -102,6 +102,10 @@ namespace FireRebalance
             if (weapon.CurrentUsageItem != null && weapon.CurrentUsageItem.WeaponFlags.HasAnyFlag<WeaponFlags>(WeaponFlags.Burning))
             {
                 GetState(ship).LastFireDamage = Mission.Current.CurrentTime;
+                if (ship.FireHitPoints <= 0)
+                {
+                    ship.DealDamage(damage, (MissionShip) null, out int _, out int _, out DamageTypes _, out bool _);
+                }
             }
         }
     }
