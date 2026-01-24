@@ -1,3 +1,4 @@
+using TaleWorlds.Library;
 using NavalDLC.Missions.MissionLogics;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
@@ -7,7 +8,6 @@ namespace FireRebalance
 {
     public class FireRebalanceSubmodule : MBSubModuleBase
     {
-        private const string HarmonyID = "firerebalance";
         protected override void OnSubModuleLoad()
         {
             base.OnSubModuleLoad();
@@ -18,14 +18,12 @@ namespace FireRebalance
             base.OnSubModuleUnloaded();
         }
 
-        public override void OnMissionBehaviorInitialize(Mission mission)
+        public override void OnBeforeMissionBehaviorInitialize(Mission mission)
         {
-            if (mission.HasMissionBehavior<NavalShipsLogic>())
+            if (mission.GetMissionBehavior<FireRebalanceBehavior>() == null)
             {
-                if (mission.GetMissionBehavior<FireRebalanceBehavior>() == null)
-                {
-                    mission.AddMissionBehavior(new FireRebalanceBehavior());
-                }
+                Debug.Print("[FireRebalance] Fire behavior added!");
+                mission.AddMissionBehavior(new FireRebalanceBehavior());
             }
         }
 

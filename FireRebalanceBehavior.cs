@@ -25,46 +25,75 @@ namespace FireRebalance
             return LastFireDamage.GetOrCreateValue(ship);
         }
         
+        //Reflection garbage:
+        
         public static readonly FieldInfo NextFireHitPointRestoreTimeField =
             typeof(MissionShip).GetField("_nextFireHitPointRestoreTime", BindingFlags.Instance | BindingFlags.NonPublic);
         
-        public static readonly PropertyInfo FireHPProp =
-            typeof(MissionShip).GetProperty("FireHitPoints",
-                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        
+        private delegate void FireHPSetterDelegate(MissionShip ship, float value);
+        private static readonly FireHPSetterDelegate FireHPSetter;
 
-        public static readonly MethodInfo FireHPSetter =
-            FireHPProp?.GetSetMethod(true);
         
         public override MissionBehaviorType BehaviorType => MissionBehaviorType.Other;
+
+        static FireRebalanceBehavior()
+        {
+            var fireHpProp = typeof(MissionShip).GetProperty(
+                "FireHitPoints",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            
+            var setter = fireHpProp?.GetSetMethod(true);
+
+            if (setter != null)
+            {
+                FireHPSetter = (FireHPSetterDelegate)
+                    Delegate.CreateDelegate(typeof(FireHPSetterDelegate), setter);
+            }
+        }
+        //End of reflection garbage
 
         public override void OnBehaviorInitialize()
         {
             base.OnBehaviorInitialize();
             var navalLogic = Mission.Current.GetMissionBehavior<NavalShipsLogic>();
+            if (navalLogic == null)
+            {
+                Debug.Print("[FireRebalance] Not a naval mission! Self-Removing!");
+                Mission.Current.RemoveMissionBehavior(this);
+                return;
+            }
             _navalAgentsLogic = Mission.Current.GetMissionBehavior<NavalAgentsLogic>();
             navalLogic.ShipHitEvent += OnShipHit;
-            foreach (var missionObject in Mission.Current.ActiveMissionObjects.OfType<MissionShip>())
-            {
-                NextFireHitPointRestoreTimeField?.SetValue(missionObject, float.MaxValue);
-            }
+            navalLogic.ShipSpawnedEvent += OnShipSpawned;
+            Debug.Print("[FireRebalance] Behavior initialized!");
+        }
+
+        private void OnShipSpawned(MissionShip ship)
+        {
+            NextFireHitPointRestoreTimeField?.SetValue(ship, float.MaxValue);
+            FireHPSetter(ship, ship.HitPoints);
+            //InformationManager.DisplayMessage(new InformationMessage($"{ship.ShipOrigin.Name} : has {ship.FireHitPoints} out of {ship.MaxFireHealth} fhp", new Color(1F,0.5F,0.0F)));
         }
 
         protected override void OnEndMission()
         {
+            base.OnEndMission();
             var navalLogic = Mission.Current.GetMissionBehavior<NavalShipsLogic>();
             navalLogic.ShipHitEvent -= OnShipHit;
+            navalLogic.ShipSpawnedEvent -= OnShipSpawned;
         }
 
         public override void OnMissionTick(float dt)
         {
+            if (Mission.Current == null || _navalAgentsLogic == null)
+                return;
+            
             _fireTickAccumulator += dt;
             if (_fireTickAccumulator < FireTickInterval)
                 return;
             
             _fireTickAccumulator -= FireTickInterval;
-
-            if (Mission.Current == null || _navalAgentsLogic == null)
-                return;
 
             foreach (var missionObject in Mission.Current.ActiveMissionObjects.OfType<MissionShip>())
             {
@@ -73,7 +102,7 @@ namespace FireRebalance
 
                 if (missionObject.FireHitPoints >= fireHPMax)
                 {
-                    FireHPSetter?.Invoke(missionObject, new object[] { fireHPMax });
+                    FireHPSetter(missionObject, fireHPMax);
                     continue;
                 }
 
@@ -91,14 +120,17 @@ namespace FireRebalance
                     missionObject.FireHitPoints + (regenPerSecond * FireTickInterval),
                     fireHPMax
                 );
-
-                FireHPSetter?.Invoke(missionObject, new object[] { newFireHP });
+                //InformationManager.DisplayMessage(new InformationMessage($"{missionObject.ShipOrigin.Name} : has {newFireHP} out of {missionObject.MaxFireHealth} fhp. Regen: {regenPerSecond}", new Color(0.1F,1,0.1F)));
+                
+                FireHPSetter(missionObject, newFireHP);
             }
         }
 
         private void OnShipHit(MissionShip ship, Agent attacker, int damage, 
             Vec3 impactPosition, Vec3 impactDirection, MissionWeapon weapon, int affectorWeaponSlotOrMissileIndex)
         {
+            //InformationManager.DisplayMessage(new InformationMessage($"{ship.ShipOrigin.Name} : has {ship.FireHitPoints} out of {ship.MaxFireHealth} fhp", new Color(1F,0.5F,0.0F)));
+
             if (weapon.CurrentUsageItem != null && weapon.CurrentUsageItem.WeaponFlags.HasAnyFlag<WeaponFlags>(WeaponFlags.Burning))
             {
                 GetState(ship).LastFireDamage = Mission.Current.CurrentTime;
